@@ -1,0 +1,5 @@
+debug: true
+model: llama3
+database:
+  host: localhost
+  port: 5432
