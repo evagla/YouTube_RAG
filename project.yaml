@@ -1,0 +1,58 @@
+project:
+  name: youtube_rag
+  version: 0.1.0
+
+paths:
+  src: src/
+  config: config/
+  tests: tests/
+  data: data/
+  transcripts: data/transcripts/
+  chunks: data/chunks/
+  embeddings: data/embeddings/
+  ingestion: src/ingestion/
+  processing: src/processing/
+  services: src/services/
+
+dependencies:
+  - openai
+  - requests
+  - pyyaml
+  - pandas
+  - numpy
+  - psycopg2-binary
+
+templates:
+
+  src/main.py: |
+    from src.pipeline import run_pipeline
+
+    if __name__ == "__main__":
+        run_pipeline()
+
+  src/pipeline.py: |
+    def run_pipeline():
+        print("YouTube RAG pipeline initialized")
+
+  src/ingestion/youtube_ingestion.py: |
+    def fetch_transcript(video_id: str):
+        return "Transcript goes here"
+
+  src/processing/chunking.py: |
+    def chunk_text(text, size=500):
+        return [text[i:i+size] for i in range(0, len(text), size)]
+
+  src/processing/embeddings.py: |
+    def embed(text):
+        return [0.0] * 384  # placeholder
+
+  config/settings.yaml: |
+    debug: true
+    model: llama3
+    database:
+      host: localhost
+      port: 5432
+
+  tests/test_pipeline.py: |
+    def test_pipeline():
+        assert True
