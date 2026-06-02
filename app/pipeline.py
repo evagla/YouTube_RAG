@@ -1,9 +1,9 @@
-from app.services.processing.chunking import chunk_text
-from app.services.processing.embeddings import ebed_text
-from app.services.db import insert_chunk
+from app.processing.chunking import chunk_text
+from app.processing.embeddings import embed_text
+from app.db.db import insert_chunk
 
 
-def embed_adn_store_text(video_di: str, text: st):
+def embed_and_store_text(transcript_id: str, text: str):
 
     print("embed_and_store pipeline initialized")
 
@@ -16,11 +16,14 @@ def embed_adn_store_text(video_di: str, text: st):
 
     for idx, chunk in enumerate(chunks):
         print(f"creates embedding for chunk {idx}")
-        embedding = emed_text(chunk)
+        embedding = embed_text(chunk)
 
         print(f" saving chunk {idx} in db...")
         chunk_id = insert_chunk(
-            video_id=video_id, chunk_index=idx, text=chunk, embedding=embedding
+            transcript_id=transcript_id,
+            chunk_index=idx,
+            text=chunk,
+            embedding=embedding,
         )
         saved_ids.append(chunk_id)
 

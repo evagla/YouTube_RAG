@@ -1,4 +1,4 @@
-from src.youtube import fetch_transcript
+from app.ingestion.youtube import fetch_transcript
 
 video_id = "hXlSicZE9jI"  # byt till valfri video
 text = fetch_transcript(video_id)
