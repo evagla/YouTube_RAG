@@ -6,21 +6,23 @@ Using Postgres db in Docker
 import psycopg2  # PostgreSQL client
 from psycopg2.extras import RealDictCursor
 import os
+from pgvector.psycopg2 import register_vector
 
-1 + 1
 # ---------------------------------------
 # Database connection
 # ---------------------------------------
 
 
 def get_connection():
-    return psycopg2.connect(
+    conn = psycopg2.connect(
         host="localhost",
         port=5432,
         database="youtube_rag",
         user="raguser",
         password="ragpass",
     )
+    register_vector(conn)
+    return conn
 
 
 # ---------------------------------------
@@ -154,6 +156,27 @@ def get_chunks_by_video(video_id: str):
 # ---------------------------------------
 # Search using pgvectorscale
 # ---------------------------------------
+"""
+-  <-> = cosine distance in pgvector
+-  the lowest value = the closest
+-  returning top-k chunks
+
+"""
+
+
+def search_chunks(query_embedding, k=5):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, transcript_id, chunk_index, text, embedding, (embedding <-> (%s)::vector) AS distance
+                FROM chunks
+                ORDER BY embedding <-> (%s) ::vector
+                LIMIT %s;
+                """,
+                (query_embedding, query_embedding, k),
+            )
+            return cur.fetchall()
 
 
 # ---------------------------------------

@@ -1,4 +1,4 @@
-from app.pipeline import embed_and_store_text
+from app.rag.pipeline import embed_and_store_text
 
 transcript_id = 3  # an exisiting id in db
 text = """hela transkriptet här..."""

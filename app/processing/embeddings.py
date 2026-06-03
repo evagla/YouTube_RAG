@@ -7,3 +7,4 @@ print("model is running")
 def embed_text(text: str):
     embedding = model.encode(text)
     return embedding.tolist()
+    print("embed_text")
