@@ -8,6 +8,7 @@ from psycopg2.extras import RealDictCursor
 import os
 from pgvector.psycopg2 import register_vector
 import time
+from typing import List, Dict, Any
 
 # ---------------------------------------
 # SQL Search constant
@@ -177,7 +178,7 @@ def get_chunks_by_video(video_id: str):
 """
 
 
-def search_chunks(query_embedding, k=5):
+def search_chunks(query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
     k = min(k, 20)  # do not use a lager k value than 20
 
     with get_connection() as conn:

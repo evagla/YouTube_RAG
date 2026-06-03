@@ -14,3 +14,12 @@ def retrieve_relevant_chunks(query: str, k=5):
     query_embedding = embed_text(query)
     rows = search_chunks(query_embedding, k)
     return rows
+
+
+def retrieve_texts(query: str, k: int = 5) -> list[str]:
+    """
+    Returns only the text fields from the retrieved chunks.
+    """
+    rows = retrieve_relevant_chunks(query, k)
+    return [row["text"]] for row in rows]
+        
