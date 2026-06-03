@@ -7,6 +7,7 @@ import psycopg2  # PostgreSQL client
 from psycopg2.extras import RealDictCursor
 import os
 from pgvector.psycopg2 import register_vector
+import time
 
 # ---------------------------------------
 # Database connection
@@ -165,18 +166,32 @@ def get_chunks_by_video(video_id: str):
 
 
 def search_chunks(query_embedding, k=5):
+    k = min(k, 20)  # do not use a lager k value than 20
+
     with get_connection() as conn:
-        with conn.cursor() as cur:
+        # with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            start = time.time()
+
             cur.execute(
                 """
                 SELECT id, transcript_id, chunk_index, text, embedding, (embedding <-> (%s)::vector) AS distance
                 FROM chunks
-                ORDER BY embedding <-> (%s) ::vector
+                ORDER BY embedding <-> (%s)::vector
                 LIMIT %s;
                 """,
                 (query_embedding, query_embedding, k),
             )
-            return cur.fetchall()
+
+            # return cur.fetchall()
+            rows = cur.fetchall()
+            duration = time.time() - start
+            print(
+                f"search_chunks: returned: {len(rows)} rows in {duration:.4f} seconds"
+            )
+            if not rows:
+                return []
+            return rows
 
 
 # ---------------------------------------
