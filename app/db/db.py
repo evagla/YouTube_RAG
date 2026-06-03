@@ -10,6 +10,18 @@ from pgvector.psycopg2 import register_vector
 import time
 
 # ---------------------------------------
+# SQL Search constant
+# ---------------------------------------
+SQL_SEARCH_CHUNKS = """
+SELECT id, transcript_id, chunk_index, text, embedding,
+    (embedding <-> (%s)::vector) AS distence
+FROM chunks
+ORDER BY embedding <-> (%s)::vector
+LIMIT %s;
+"""
+
+
+# ---------------------------------------
 # Database connection
 # ---------------------------------------
 
@@ -173,7 +185,7 @@ def search_chunks(query_embedding, k=5):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             start = time.time()
 
-            cur.execute(
+            '''cur.execute(
                 """
                 SELECT id, transcript_id, chunk_index, text, embedding, (embedding <-> (%s)::vector) AS distance
                 FROM chunks
@@ -181,7 +193,11 @@ def search_chunks(query_embedding, k=5):
                 LIMIT %s;
                 """,
                 (query_embedding, query_embedding, k),
-            )
+            )'''
+
+            cur.execute(
+                SQL_SEARCH_CHUNKS, (query_embedding, query_embedding, k)
+            )  # use the sql search constant
 
             # return cur.fetchall()
             rows = cur.fetchall()
