@@ -54,7 +54,7 @@ from app.retrieval.retrieval import retrieve_texts
 from app.rag.llm_client import client  # finns ännu inte!!
 
 
-def run_rag(query: str) -> str:
+def run_rag(query: str, youtube_id: str) -> str:
     """
     Run the whole RAG-pipeline:
     1.Fetching relevant chunks by using retrieval
@@ -65,7 +65,7 @@ def run_rag(query: str) -> str:
     """
 
     # 1. Retrieval
-    chunks: List[str] = retrieve_texts(query)
+    chunks: List[str] = retrieve_texts(query, youtube_id)
 
     # 2. Build context
     context: str = build_context(chunks)

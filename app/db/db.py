@@ -244,3 +244,47 @@ def update_chunk_embedding(chunk_id: int, embedding):
                 (embedding, chunk_id),
             )
             conn.commit()
+
+
+# ---------------------------------------
+# get db transkript_id for a youtoube video
+# ---------------------------------------
+def get_transcript_id_for_video(youtube_id: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT t.id
+        FROM transcripts t
+        JOIN videos v On v.id = t.video_id
+        WHERE v.youtube_id = %s
+        """,
+        (youtube_id,),
+    )
+
+    row = cur.fetchall()
+    cur.close()
+    conn.close()
+    return row[0] if row else None
+
+
+# ---------------------------------------
+# Search using pgvectorscale in chunks for a specified video
+# ---------------------------------------
+
+
+def search_chunks_for_transcript(transcript_id: int, query_embedding, k: int = 5):
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT id, transcript_id, chunk_index, text, embedding, (embedding <-> (%s)::vector) AS distance
+                FROM chunks
+                WHERE transcript_id = %s
+                ORDER BY embedding <-> (%s)::vector
+                LIMIT %s;
+                """,
+                (query_embedding, transcript_id, query_embedding, k),
+            )
+            return cur.fetchall()
