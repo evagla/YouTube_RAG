@@ -1,4 +1,4 @@
-from app.rag.pipeline import embed_and_store_text
+from archive.src.pipeline import embed_and_store_text
 from app.db.db import insert_transcript
 
 

@@ -21,5 +21,4 @@ def retrieve_texts(query: str, k: int = 5) -> list[str]:
     Returns only the text fields from the retrieved chunks.
     """
     rows = retrieve_relevant_chunks(query, k)
-    return [row["text"]] for row in rows]
-        
+    return [row["text"] for row in rows]
