@@ -41,7 +41,7 @@ def build_prompt(query: str, context: str) -> str:
 
     Instructions:
     - Answer ONLY using the information n the context above.
-    - If the answer isnot found in the context, say: "I cannot find the anser in the video."
+    - If the answer is not found in the context, say: "I cannot find the anser in the video."
     - Do not add external knowledge or assumptions.
     """
 

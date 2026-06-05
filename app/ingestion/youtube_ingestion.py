@@ -17,10 +17,17 @@ def ingest_video(video_id: str) -> int:
     """
 
     # 1. Fetch transcript
+    # transcript_text, metadata = fetch_transcript(video_id)
     transcript_text = fetch_transcript(video_id)
 
-    # 2. Insert video row
+    # 2. Insert video row with metadata
     vid = insert_video(video_id)
+    """vid = insert_video(
+        youtube_id=video_id,
+        title=metadata["title"],
+        channel=metadata["channel"],
+        published_at=metadata["published_at"],
+    )"""
 
     # 3. Insert transcript row
     transcript_id = insert_transcript(vid, transcript_text)

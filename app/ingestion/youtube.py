@@ -1,3 +1,5 @@
+# Frist version, only fetching transkript ( no metadata)
+
 from youtube_transcript_api import (
     YouTubeTranscriptApi,
     TranscriptsDisabled,

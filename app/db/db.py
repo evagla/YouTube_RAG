@@ -66,6 +66,27 @@ def insert_video(
     return new_id
 
 
+# ----------------------------------------
+# Update video metadata
+# ----------------------------------------
+
+
+def update_video_metadata(youtube_id: str, title: str, channel: str, published_at: str):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE videos
+                SET title = %s,
+                channel = %s,
+                published_at = %s
+                WHERE youtube_id = %s
+                """,
+                (title, channel, published_at, youtube_id),
+            )
+        conn.commit()
+
+
 # ---------------------------------------
 # Insert transcript
 # ---------------------------------------
@@ -91,32 +112,6 @@ def insert_transcript(video_id: int, text: str):
     return new_id
 
 
-'''
-# ---------------------------------------
-# Insert chunk with embedding
-# ---------------------------------------
-
-
-def insert_chunk(transcript_id: str, chunk_index: int, text: str, embedding: list):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        """
-        INSERT INTO chunks (transcript_id, chunk_index, text, embedding)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id;
-        """,
-        (transcript_id, chunk_index, text, embedding),
-    )
-
-    new_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    conn.close()
-    return new_id
-
-'''
 # ---------------------------------------
 # Insert chunk (without embedding)
 # ---------------------------------------
@@ -288,3 +283,24 @@ def search_chunks_for_transcript(transcript_id: int, query_embedding, k: int = 5
                 (query_embedding, transcript_id, query_embedding, k),
             )
             return cur.fetchall()
+
+
+# ----------------------------------
+# check for metadata
+# ----------------------------------
+
+
+def video_has_metadata(youtube_id: str) -> bool:
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT title, channel, published_at FROM videos WHERE youtube_id = %s",
+                (youtube_id,),
+            )
+            row = cur.fetchone()
+
+    if not row:
+        return False  # video does not exist in db yet
+
+    title, channel, published_at = row
+    return all([title, channel, published_at])
