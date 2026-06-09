@@ -13,6 +13,7 @@ from app.db.db import (
     get_transcript_id_for_video,
     search_chunks_for_transcript,
 )
+from app.retrieval.reranker import rerank
 
 
 def retrieve_relevant_chunks(query: str, youtube_id: str, k=5):
@@ -26,9 +27,18 @@ def retrieve_relevant_chunks(query: str, youtube_id: str, k=5):
     # 2. Embed query
     query_embedding = embed_text(query)
 
-    # 3. Serch chunks for this transcript ONLY
-    rows = search_chunks_for_transcript(transcript_id, query_embedding, k)
-    return rows
+    # 3 A. Get top 15 candidates
+    candidates = search_chunks_for_transcript(transcript_id, query_embedding, 15)
+
+    # 3 B. Rerank the candidates
+    reranked = rerank(query, candidates, top_k=k)
+
+    return reranked
+
+    """   # 3. Serch chunks for this transcript ONLY
+        rows = search_chunks_for_transcript(transcript_id, query_embedding, k)
+        return rows
+    """
 
 
 def retrieve_texts(query: str, youtube_id: str, k=5):

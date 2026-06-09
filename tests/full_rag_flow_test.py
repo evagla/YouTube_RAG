@@ -58,7 +58,7 @@ from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 VIDEO_ID = "MaIfDPuSlw8"
 
 # 2. Set the question you want to ask about the video
-QUESTION = "On what subject is this video?"
+QUESTION = "How many folders are there in the project structure?"
 
 # ---------------------------------------
 # RUN TEST
@@ -72,7 +72,6 @@ def test_full_rag_flow():
 
     # 1. Check if viedo already ingested
     transcript_id = get_transcript_id_for_video(VIDEO_ID)
-
     if transcript_id is None:
         print("Transcript not found in DB. Running ingest pipeline...\n")
         ingest_video(VIDEO_ID)
