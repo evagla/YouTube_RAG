@@ -51,11 +51,33 @@ def build_prompt(query: str, context: str) -> str:
 
 
 # -------------------------------
-# Run RAG
+# Run RAG and levels for confidence
 # -------------------------------
 from typing import List
 from app.retrieval.retrieval import retrieve_texts
 from app.rag.llm_client import client  # finns ännu inte!!
+
+
+def llm_confidence_level(value: float) -> str:
+    if value is None:
+        return "Unkonwn"
+    if value < 0.34:
+        return "Low"
+    elif value < 0.67:
+        return "Medium"
+    else:
+        return "High"
+
+
+def retrieval_confidence_level(score: float) -> str:
+    if score is None:
+        return "Unkonwn"
+    if score < -5:
+        return "Low"
+    elif score < -1:
+        return "Medium"
+    else:
+        return "High"
 
 
 def run_rag(query: str, youtube_id: str) -> str:
@@ -95,19 +117,24 @@ def run_rag(query: str, youtube_id: str) -> str:
         ]
     )
 
-    # buil answer with x-tra log info
+    # buil answer with x-tra log info and add info on confidence level
     answer_text = response["message"]["content"].strip()
     llm_confidence = extract_confidence(answer_text)
+    level = llm_confidence_level(llm_confidence)
+    answer_text = answer_text + f"\nConfidence level: {level}"
 
     print("\n===== RAG DEBUG PANEL =====")
     print(f"Original query: {original_query}")
     print(f"Expanded query: {expanded_query}")
-    print(f"Retrieval confidence: {retrieval_confidence}")
-    print(f"LLM confidence: {llm_confidence}")
+    print(
+        f"Retrieval confidence: {retrieval_confidence} "
+        f"({retrieval_confidence_level(retrieval_confidence)})"
+    )
+    print(f"LLM confidence: {llm_confidence} ({llm_confidence_level(llm_confidence)})")
 
-    print("\nTop chunks:")
+    """print("\nTop chunks:")
     for row in chunks:
-        print(f"- {row['text'][:120]}...")
+        print(f"- {row['text'][:120]}...")"""
 
     print("===========================\n")
 
@@ -116,10 +143,19 @@ def run_rag(query: str, youtube_id: str) -> str:
 
 
 def extract_confidence(answer: str) -> float:
+    """print("\n--- RAW ANSWER FROM MODEL ---")
+    print(answer)
+    print("--------- END ANSWER --------\n")"""
+
     for line in answer.splitlines():
+        """ print(f"[CONF-DEBUG] line: {repr(line)}")"""
         if line.lower().startswith("confidence:"):
             try:
-                return float(line.split(":")[1].strip())
-            except:
+                value_str = line.split(":")[1].strip()
+                """ print(f"[CONF-DEBUG] found confidence string: {repr(value_str)}")"""
+                return float(value_str)
+            except Exception as e:
+                """print(f"[CONF-DEBUG] failed to parse confidence: {e}")"""
                 return None
+    """print("[CONF-DEBUG] no confidence line found")"""
     return None

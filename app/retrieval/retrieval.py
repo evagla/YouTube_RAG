@@ -18,7 +18,7 @@ from app.retrieval.reranker import rerank
 
 
 def retrieve_relevant_chunks(expanded_query: str, youtube_id: str, k=5):
-    print("retrieve_relevant_chunks is running")
+    print("...Retrieving relevant chunks...")
 
     # 1.Get transcript_id for the video
     transcript_id = get_transcript_id_for_video(youtube_id)

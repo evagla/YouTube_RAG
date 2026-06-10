@@ -18,9 +18,9 @@ class OllamaClient:
         # add x-tra parameters if they occure
         payload.update(kwargs)
 
-        print("===PAYLOAD SENT TO OLLAMA ===")
+        """ print("===PAYLOAD SENT TO OLLAMA ===")
         print(payload)
-        print("=============================")
+        print("=============================")"""
 
         response = requests.post(self.url, json=payload)
         response.raise_for_status()

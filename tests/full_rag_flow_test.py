@@ -55,10 +55,10 @@ from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 # ---------------------------------------
 
 # 1. Set the YouTube video ID you want to test
-VIDEO_ID = "MaIfDPuSlw8"
+VIDEO_ID = "KzpUJa4abzs"
 
 # 2. Set the question you want to ask about the video
-QUESTION = "what's Dave?"
+QUESTION = "what color is the shirt?"
 
 # ---------------------------------------
 # RUN TEST
@@ -84,7 +84,7 @@ def test_full_rag_flow():
         )
 
     # 2. Run RAG
-    print("Running RAG pipeline...\n")
+    print("# Running RAG pipeline...\n")
     answer = run_rag(QUESTION, VIDEO_ID)
 
     print("=== RAG ANSWER ===\n")

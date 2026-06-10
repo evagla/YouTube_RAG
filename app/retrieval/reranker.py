@@ -17,7 +17,7 @@ def rerank(query: str, rows: list, top_k: int = 5):
     returns: top_k rows sorted by relevance
     """
 
-    print("Reranking...")
+    print("...Reranking...")
     pairs = [(query, row["text"]) for row in rows]
 
     inputs = tokenizer(
@@ -39,10 +39,10 @@ def rerank(query: str, rows: list, top_k: int = 5):
         row["score"] = score
 
     # DEBUG LOGGING
-    print("\n === RERANKER SCORES===")
+    """print("\n === RERANKER SCORES===")
     for score, row in scored_rows:
         print(f"Score: {score: 4f} | Text: {row['text'][:80]}...")
-    print("=========================")
+    print("=========================")"""
 
     # Only return rows and score
     return [row for score, row in scored_rows[:top_k]]
