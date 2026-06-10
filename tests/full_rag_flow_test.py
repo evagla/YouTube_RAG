@@ -58,7 +58,7 @@ from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 VIDEO_ID = "MaIfDPuSlw8"
 
 # 2. Set the question you want to ask about the video
-QUESTION = "How many folders are there in the project structure?"
+QUESTION = "what's Dave?"
 
 # ---------------------------------------
 # RUN TEST
@@ -80,7 +80,7 @@ def test_full_rag_flow():
         ingest_metadata(VIDEO_ID)
     else:
         print(
-            "transcript already exisits in DB (id = {transcript_id}). Skipping ingest.\n"
+            f"transcript already exisits in DB (id = {transcript_id}). Skipping ingest.\n"
         )
 
     # 2. Run RAG

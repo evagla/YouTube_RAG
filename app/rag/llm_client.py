@@ -1,5 +1,5 @@
 """
-Define the LLM to use in rag_pipeline
+Define the LLM to use in rag_pipeline as well as query-expansion
 Here, the Ollama model must be installed and will run on your local computer
 
 """
@@ -12,8 +12,11 @@ class OllamaClient:
         self.model = model
         self.url = "http://localhost:11434/api/chat"
 
-    def chat(self, messages):
+    def chat(self, messages, **kwargs):
         payload = {"model": self.model, "messages": messages, "stream": False}
+
+        # add x-tra parameters if they occure
+        payload.update(kwargs)
 
         print("===PAYLOAD SENT TO OLLAMA ===")
         print(payload)

@@ -35,11 +35,18 @@ def rerank(query: str, rows: list, top_k: int = 5):
     scored_rows = list(zip(scores.tolist(), rows))
     scored_rows.sort(key=lambda x: x[0], reverse=True)
 
+    for score, row in scored_rows:
+        row["score"] = score
+
     # DEBUG LOGGING
     print("\n === RERANKER SCORES===")
     for score, row in scored_rows:
         print(f"Score: {score: 4f} | Text: {row['text'][:80]}...")
     print("=========================")
 
-    # Only return rows
-    return [row for _, row in scored_rows[:top_k]]
+    # Only return rows and score
+    return [row for score, row in scored_rows[:top_k]]
+
+    # print out score
+    best_score = scored_rows[0][0]
+    print(f"Reranker confidence (best score): {best_score: .4f}")

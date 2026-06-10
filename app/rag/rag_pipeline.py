@@ -43,6 +43,10 @@ def build_prompt(query: str, context: str) -> str:
     - Answer ONLY using the information n the context above.
     - If the answer is not found in the context, say: "I cannot find the anser in the video."
     - Do not add external knowledge or assumptions.
+
+    Format:
+    Answer: <Your answer>
+    Confidence: <0-1>
     """
 
 
@@ -65,10 +69,17 @@ def run_rag(query: str, youtube_id: str) -> str:
     """
 
     # 1. Retrieval
-    chunks: List[str] = retrieve_texts(query, youtube_id)
+    # old:  chunks: List[str] = retrieve_texts(query, youtube_id)
+    result = retrieve_texts(query, youtube_id)
+
+    original_query = result["original_query"]
+    expanded_query = result["expanded_query"]
+    chunks = result["chunks"]
+    retrieval_confidence = result["retrieval_confidence"]
 
     # 2. Build context
-    context: str = build_context(chunks)
+    # old: context: str = build_context(chunks)
+    context = build_context([row["text"] for row in chunks])
 
     # 3. Build prompt
     prompt: str = build_prompt(query, context)
@@ -84,5 +95,31 @@ def run_rag(query: str, youtube_id: str) -> str:
         ]
     )
 
-    # 5. Retruning the answer from Ollama
-    return response["message"]["content"].strip()
+    # buil answer with x-tra log info
+    answer_text = response["message"]["content"].strip()
+    llm_confidence = extract_confidence(answer_text)
+
+    print("\n===== RAG DEBUG PANEL =====")
+    print(f"Original query: {original_query}")
+    print(f"Expanded query: {expanded_query}")
+    print(f"Retrieval confidence: {retrieval_confidence}")
+    print(f"LLM confidence: {llm_confidence}")
+
+    print("\nTop chunks:")
+    for row in chunks:
+        print(f"- {row['text'][:120]}...")
+
+    print("===========================\n")
+
+    # 5. Retruning the answer from Ollama and log info
+    return answer_text
+
+
+def extract_confidence(answer: str) -> float:
+    for line in answer.splitlines():
+        if line.lower().startswith("confidence:"):
+            try:
+                return float(line.split(":")[1].strip())
+            except:
+                return None
+    return None

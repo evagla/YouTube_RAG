@@ -13,10 +13,11 @@ from app.db.db import (
     get_transcript_id_for_video,
     search_chunks_for_transcript,
 )
+from app.retrieval.query_expansion import expand_query
 from app.retrieval.reranker import rerank
 
 
-def retrieve_relevant_chunks(query: str, youtube_id: str, k=5):
+def retrieve_relevant_chunks(expanded_query: str, youtube_id: str, k=5):
     print("retrieve_relevant_chunks is running")
 
     # 1.Get transcript_id for the video
@@ -25,13 +26,13 @@ def retrieve_relevant_chunks(query: str, youtube_id: str, k=5):
         raise Exception(f"No transcript found for video {youtube_id}")
 
     # 2. Embed query
-    query_embedding = embed_text(query)
+    query_embedding = embed_text(expanded_query)
 
     # 3 A. Get top 15 candidates
     candidates = search_chunks_for_transcript(transcript_id, query_embedding, 15)
 
     # 3 B. Rerank the candidates
-    reranked = rerank(query, candidates, top_k=k)
+    reranked = rerank(expanded_query, candidates, top_k=k)
 
     return reranked
 
@@ -42,8 +43,19 @@ def retrieve_relevant_chunks(query: str, youtube_id: str, k=5):
 
 
 def retrieve_texts(query: str, youtube_id: str, k=5):
-    rows = retrieve_relevant_chunks(query, youtube_id, k)
-    return [row["text"] for row in rows]
+    # expanded query
+    expanded_query = expand_query(query)
+
+    # retrieve chunks incl reranker scores
+    rows = retrieve_relevant_chunks(expanded_query, youtube_id, k)
+
+    # return a structured result for run_rag()
+    return {
+        "original_query": query,
+        "expanded_query": expanded_query,
+        "chunks": rows,
+        "retrieval_confidence": rows[0]["score"] if rows else None,
+    }
 
 
 '''
