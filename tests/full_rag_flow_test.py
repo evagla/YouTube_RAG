@@ -48,7 +48,7 @@ import uuid  # to generate uniqe session id
 
 def test_full_rag_flow():
     session_id = str(uuid.uuid4())
-    VIDEO_ID = input("YouTube ID:")
+    VIDEO_ID = input("\nYouTube ID:")
 
     print("\n=== FULL RAG PIPELINE TEST ===\n")
     print(f"Session ID: {session_id}")
