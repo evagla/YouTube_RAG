@@ -1,47 +1,41 @@
 """
+
 FULL RAG PIPELINE TEST
 ======================
 
-This test verifies that the entire RAG pipeline works end-to-end.
+This script provides an interactive way to test the entire RAG pipeline
+end‑to‑end using any YouTube video ID.
 
-HOW TO USE THIS FILE
---------------------
+WHAT THIS SCRIPT DOES
+---------------------
+- Generates a unique session ID for each run (clean conversation history)
+- Ensures the video is ingested (transcript, metadata, chunks, embeddings)
+- Starts an interactive question loop where you can ask multiple questions
+  about the same video without reloading or re‑ingesting anything
+- Uses the full RAG pipeline: retrieval → reranking → context building → LLM
 
-1. Set the YouTube video ID you want to test:
-       VIDEO_ID = "REPLACE_ME"
-
-2. Run the ingest pipeline to download transcript, chunk it,
-   embed it and store it in the database:
-       uv run python -m app.ingest.ingest VIDEO_ID
-
-3. Set your test question in the variable QUESTION below, or use the current one.
-
-4. Run this test:
+HOW TO USE
+----------
+1. Run the script:
        uv run python -m tests.full_rag_flow_test
 
-EXPECTED OUTPUT
----------------
-- Retrieval logs (5 chunks)
-- A clean answer from the LLM based strictly on the video content
-- No errors from Ollama or the RAG pipeline
+2. Enter a YouTube video ID when prompted.
 
-If the answer is coherent and based on the video, the RAG system works.
+3. Ask questions about the video.
+   Type "quit", "exit", or "kill" to stop.
 
-NOTE ABOUT YT-DLP WARNINGS
---------------------------
+EXPECTED BEHAVIOR
+-----------------
+- The script ingests the video only if needed.
+- Retrieval and reranking logs appear for each question.
+- The LLM answers strictly based on the video content.
+- Multiple follow‑up questions work within the same session.
 
-When this test runs, yt-dlp may print warnings such as:
-
-- "No supported JavaScript runtime could be found"
-- "ffmpeg not found"
-
-These warnings are expected and harmless in this context.
-
-The metadata ingestion step only extracts video metadata (title, channel,
-upload date) and does NOT download or process video or audio streams.
-Therefore, yt-dlp works correctly even without a JS runtime or ffmpeg.
-
-The warnings can be ignored during testing.
+NOTES
+-----
+- yt‑dlp warnings (e.g., missing JS runtime or ffmpeg) are normal and harmless.
+- Metadata ingestion does NOT download video or audio streams.
+- This script is intended for local testing and debugging of the RAG pipeline.
 
 """
 
@@ -49,26 +43,15 @@ from app.rag.rag_pipeline import run_rag
 from app.ingestion.youtube_ingestion import ingest_video
 from app.db.db import get_transcript_id_for_video, video_has_metadata
 from app.ingestion.youtube_metadata_ingestion import ingest_metadata
-
-# ---------------------------------------
-# CONFIGURATION FOR THIS TEST
-# ---------------------------------------
-
-# 1. Set the YouTube video ID you want to test
-VIDEO_ID = "KzpUJa4abzs"
-
-# 2. Set the question you want to ask about the video
-QUESTION = "what color is the shirt?"
-
-# ---------------------------------------
-# RUN TEST
-# ---------------------------------------
+import uuid  # to generate uniqe session id
 
 
 def test_full_rag_flow():
+    session_id = str(uuid.uuid4())
+    VIDEO_ID = input("YouTube ID:")
+
     print("\n=== FULL RAG PIPELINE TEST ===\n")
-    print(f"Video ID: {VIDEO_ID}")
-    print(f"Question: {QUESTION}\n")
+    print(f"Session ID: {session_id}")
 
     # 1. Check if viedo already ingested
     transcript_id = get_transcript_id_for_video(VIDEO_ID)
@@ -83,13 +66,18 @@ def test_full_rag_flow():
             f"transcript already exisits in DB (id = {transcript_id}). Skipping ingest.\n"
         )
 
-    # 2. Run RAG
+    # 2. Run RAG with intraction loop, stop by writing quit, exit or kill
     print("# Running RAG pipeline...\n")
-    answer = run_rag(QUESTION, VIDEO_ID)
 
-    print("=== RAG ANSWER ===\n")
-    print(answer)
-    print("\n===================\n")
+    while True:
+        query = input("Question: ")
+        if query.lower() in ("quit", "exit", "kill"):
+            break
+
+        answer = run_rag(query, VIDEO_ID, session_id)
+
+        print(answer)
+        print("\n---\n")
 
 
 if __name__ == "__main__":

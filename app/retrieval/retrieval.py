@@ -31,7 +31,12 @@ def retrieve_relevant_chunks(expanded_query: str, youtube_id: str, k=5):
     # 3 A. Get top 15 candidates
     candidates = search_chunks_for_transcript(transcript_id, query_embedding, 15)
 
-    # 3 B. Rerank the candidates
+    # 3 B. Truncate long chunk text before reranking
+    for row in candidates:
+        if len(row["text"]) > 300:
+            row["text"] = row["text"][:300]
+
+    # 3 C. Rerank the candidates
     reranked = rerank(expanded_query, candidates, top_k=k)
 
     return reranked

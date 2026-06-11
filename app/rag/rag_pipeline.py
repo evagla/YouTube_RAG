@@ -22,7 +22,7 @@ def build_context(chunks: List[str]) -> str:
 # -------------------------------
 
 
-def build_prompt(query: str, context: str) -> str:
+def build_prompt(query: str, context: str, history: str) -> str:
     """
     Builds a clean and reliable RAG prompt in English.
     The model is instructed to answer strictly based on the provided context.
@@ -31,6 +31,9 @@ def build_prompt(query: str, context: str) -> str:
     return f"""
     You are an assistant that answers questions based strictly on the contet of a YouTube video.
 
+    Conversation history:
+    {history}
+    
     Here is the relevant context extracted from the video:
     ---
     {context}
@@ -55,7 +58,7 @@ def build_prompt(query: str, context: str) -> str:
 # -------------------------------
 from typing import List
 from app.retrieval.retrieval import retrieve_texts
-from app.rag.llm_client import client  # finns ännu inte!!
+from app.rag.llm_client import client
 
 
 def llm_confidence_level(value: float) -> str:
@@ -80,15 +83,34 @@ def retrieval_confidence_level(score: float) -> str:
         return "High"
 
 
-def run_rag(query: str, youtube_id: str) -> str:
+def run_rag(query: str, youtube_id: str, session_id: str) -> str:
     """
     Run the whole RAG-pipeline:
+    -get a db connection
+    -load session history
     1.Fetching relevant chunks by using retrieval
     2.Building context
     3.Building promt
     4.Sending prompt to LLM
+    -Debug panel
+    -Save the intreraction
     5.Returning the answer
     """
+
+    from app.db.session_memory import load_history, save_interaction
+    from app.db.db import get_connection
+
+    # Get db conection
+    conn = get_connection()
+
+    # Load session history
+    history = load_history(conn, session_id)
+
+    history_text = ""
+    for user_msg, assistant_msg in history:
+        history_text += f"User: {user_msg}\nAssistant: {assistant_msg}\n\n"
+
+    """save_intraction(session_id.query, answer_text)"""
 
     # 1. Retrieval
     # old:  chunks: List[str] = retrieve_texts(query, youtube_id)
@@ -103,8 +125,8 @@ def run_rag(query: str, youtube_id: str) -> str:
     # old: context: str = build_context(chunks)
     context = build_context([row["text"] for row in chunks])
 
-    # 3. Build prompt
-    prompt: str = build_prompt(query, context)
+    # 3. Build prompt with history
+    prompt: str = build_prompt(query, context, history_text)
 
     # 4. Send promt to LLM using roles
     response = client.chat(
@@ -123,6 +145,7 @@ def run_rag(query: str, youtube_id: str) -> str:
     level = llm_confidence_level(llm_confidence)
     answer_text = answer_text + f"\nConfidence level: {level}"
 
+    # Debug panel
     print("\n===== RAG DEBUG PANEL =====")
     print(f"Original query: {original_query}")
     print(f"Expanded query: {expanded_query}")
@@ -138,6 +161,8 @@ def run_rag(query: str, youtube_id: str) -> str:
 
     print("===========================\n")
 
+    # Save interaction for use of history
+    save_interaction(conn, session_id, query, answer_text)
     # 5. Retruning the answer from Ollama and log info
     return answer_text
 

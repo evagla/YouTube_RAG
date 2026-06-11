@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS chunks (
     embedding VECTOR(1536),
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS public.sessions(
+    id SERIAL PRIMARY KEY, 
+    session_id TEXT NOT NULL, 
+    user_message TEXT NOT NULL, 
+    assistant_message TEXT NOT NULL, 
+    created_at TIMESTAMP default NOW()
+);
