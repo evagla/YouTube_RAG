@@ -1,5 +1,27 @@
-debug: true
-model: llama3
+debug: false
+
+llm:
+  model: "llama3.2:latest"
+  provider: "ollama"
+  url: "http://localhost:11434/api/chat"
+
+embeddings:
+  model: "all-MiniLM-L6-v2"
+  dim: 384
+
+reranker:
+  model: "BAAI/bge-reranker-base"
+
+chunking:
+  max_chars: 500
+  overlap: 100
+
+retrieval:
+  top_k: 5
+  candidates: 15
+  truncate_length: 300
+
 database:
-  host: localhost
+  host: "localhost"
   port: 5432
+  name: "youtube_rag"

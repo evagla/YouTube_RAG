@@ -1,58 +1,254 @@
 project:
   name: youtube_rag
-  version: 0.1.0
+  version: 1.0.0
+  description: "RAG‑system based on YouTube‑transcript and metadata."
 
 paths:
-  src: src/
-  config: config/
+  app: app/
+  ingestion: app/ingestion/
+  ingestion_youtube: app/ingestion/youtube/
+  processing: app/processing/
+  rag: app/rag/
+  retrieval: app/retrieval/
+  db: app/db/
   tests: tests/
-  data: data/
-  transcripts: data/transcripts/
-  chunks: data/chunks/
-  embeddings: data/embeddings/
-  ingestion: src/ingestion/
-  processing: src/processing/
-  services: src/services/
 
 dependencies:
-  - openai
-  - requests
-  - pyyaml
-  - pandas
-  - numpy
   - psycopg2-binary
+  - sentence-transformers
+  - numpy
+  - pyyaml
+  - requests
+  - fastapi
+  - uvicorn
+  - python-dotenv
 
-templates:
+files:
 
-  src/main.py: |
-    from src.pipeline import run_pipeline
+  # -------------------------
+  # Root files
+  # -------------------------
+  .gitignore: |
+    __pycache__/
+    *.pyc
+    .env
+    .venv/
+    venv/
+    .idea/
+    .vscode/
+    dist/
+    build/
+    logs/
+    *.log
+
+  .env.example: |
+    DB_USER=raguser
+    DB_PASSWORD=ragpass
+    DB_NAME=youtube_rag
+
+  requirements.txt: |
+    psycopg2-binary
+    sentence-transformers
+    numpy
+    pyyaml
+    requests
+    fastapi
+    uvicorn
+    python-dotenv
+
+  docker-compose.yml: |
+    version: "3.9"
+    services:
+      db:
+        image: ankane/pgvector
+        container_name: rag_postgres
+        environment:
+          POSTGRES_USER: raguser
+          POSTGRES_PASSWORD: ragpass
+          POSTGRES_DB: youtube_rag
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+    volumes:
+      postgres_data:
+
+  README.md: |
+    # YouTube RAG Project
+
+    Ett RAG‑system baserat på YouTube‑transkript och metadata.
+
+    ## Struktur
+    - ingestion/ — metadata + transkript
+    - processing/ — chunking, embeddings, preprocessing
+    - retrieval/ — query expansion, retrieval, reranking
+    - rag/ — RAG‑pipeline + LLM‑klient
+    - db/ — schema + DB‑anslutning
+    - tests/ — testsvit
+
+    ## Konfiguration
+    - settings.yaml innehåller icke‑hemlig konfiguration
+    - .env innehåller hemligheter (DB‑credentials)
+
+  main.py: |
+    def main():
+        print("RAG system placeholder.")
 
     if __name__ == "__main__":
-        run_pipeline()
+        main()
 
-  src/pipeline.py: |
-    def run_pipeline():
-        print("YouTube RAG pipeline initialized")
+  app/__init__.py: |
+    pass
 
-  src/ingestion/youtube_ingestion.py: |
-    def fetch_transcript(video_id: str):
-        return "Transcript goes here"
+  # -------------------------
+  # Ingestion / YouTube
+  # -------------------------
+  app/ingestion/youtube/youtube.py: |
+    def ingest_youtube_video(video_id: str):
+        raise NotImplementedError("YouTube ingestion pipeline not implemented yet.")
 
-  src/processing/chunking.py: |
-    def chunk_text(text, size=500):
-        return [text[i:i+size] for i in range(0, len(text), size)]
+  app/ingestion/youtube/youtube_metadata.py: |
+    def fetch_metadata(video_id: str) -> dict:
+        return {
+            "video_id": video_id,
+            "title": None,
+            "description": None,
+            "channel": None,
+            "published_at": None,
+        }
 
-  src/processing/embeddings.py: |
-    def embed(text):
-        return [0.0] * 384  # placeholder
+  app/ingestion/youtube/youtube_ingestion.py: |
+    def fetch_transcript(video_id: str) -> str:
+        return ""
 
-  config/settings.yaml: |
-    debug: true
-    model: llama3
-    database:
-      host: localhost
-      port: 5432
+    def preprocess_transcript(text: str) -> str:
+        return text.strip()
 
-  tests/test_pipeline.py: |
-    def test_pipeline():
+  app/ingestion/youtube/youtube_metadata_ingestion.py: |
+    def store_metadata(metadata: dict):
+        pass
+
+    def store_transcript(video_id: str, transcript: str):
+        pass
+
+  # -------------------------
+  # Processing
+  # -------------------------
+  app/processing/chunking.py: |
+    def chunk_text(text: str, max_chars: int, overlap: int):
+        raise NotImplementedError("Chunking logic not implemented yet.")
+
+  app/processing/embeddings.py: |
+    def load_embedding_model(model_name: str):
+        raise NotImplementedError("Embedding model loading not implemented yet.")
+
+    def embed_text(text: str):
+        raise NotImplementedError("Embedding logic not implemented yet.")
+
+  app/processing/preprocessing.py: |
+    def clean_text(text: str) -> str:
+        return text.strip()
+
+  # -------------------------
+  # RAG
+  # -------------------------
+  app/rag/rag_pipeline.py: |
+    def run_rag(query: str, youtube_id: str) -> dict:
+        raise NotImplementedError("RAG pipeline not implemented yet.")
+
+  app/rag/llm_client.py: |
+    def generate_answer(prompt: str) -> str:
+        raise NotImplementedError("LLM client not implemented yet.")
+
+  app/rag/prompt_templates.py: |
+    DEFAULT_TEMPLATE = """
+    You are a helpful assistant. Use the following retrieved context to answer the question.
+
+    Question:
+    {query}
+
+    Context:
+    {context}
+
+    Answer:
+    """
+
+    def build_prompt(query: str, context: str) -> str:
+        return DEFAULT_TEMPLATE.format(query=query, context=context)
+
+  # -------------------------
+  # Retrieval
+  # -------------------------
+  app/retrieval/query_expansion.py: |
+    def expand_query(query: str) -> str:
+        return query
+
+  app/retrieval/reranker.py: |
+    def rerank(query: str, candidates: list, top_k: int) -> list:
+        raise NotImplementedError("Reranker not implemented yet.")
+
+  app/retrieval/retrieval.py: |
+    def retrieve_relevant_chunks(expanded_query: str, youtube_id: str, k: int):
+        raise NotImplementedError("Retrieval logic not implemented yet.")
+
+    def retrieve_texts(query: str, youtube_id: str, k: int):
+        raise NotImplementedError("Retrieval wrapper not implemented yet.")
+
+  # -------------------------
+  # DB
+  # -------------------------
+  app/db/__init__.py: |
+    pass
+
+  app/db/db.py: |
+    import psycopg2
+    from psycopg2.extras import register_vector
+
+    def get_connection():
+        raise NotImplementedError("Database connection not implemented yet.")
+
+  app/db/schema.sql: |
+    CREATE TABLE IF NOT EXISTS transcripts (
+        id SERIAL PRIMARY KEY,
+        video_id TEXT NOT NULL,
+        transcript TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS chunks (
+        id SERIAL PRIMARY KEY,
+        transcript_id INTEGER REFERENCES transcripts(id),
+        chunk_index INTEGER NOT NULL,
+        text TEXT NOT NULL,
+        embedding VECTOR(384)
+    );
+
+    CREATE TABLE IF NOT EXISTS metadata (
+        id SERIAL PRIMARY KEY,
+        video_id TEXT NOT NULL,
+        title TEXT,
+        description TEXT,
+        channel TEXT,
+        published_at TIMESTAMP
+    );
+
+  # -------------------------
+  # Tests
+  # -------------------------
+  tests/__init__.py: |
+    pass
+
+  tests/test_chunking.py: |
+    def test_chunk_text_basic():
+        assert True
+
+  tests/test_embeddings.py: |
+    def test_embed_text():
+        assert True
+
+  tests/test_retrieval.py: |
+    def test_retrieve_relevant_chunks():
+        assert True
+
+  tests/test_rag_pipeline.py: |
+    def test_run_rag():
         assert True
