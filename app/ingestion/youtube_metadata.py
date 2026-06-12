@@ -1,6 +1,5 @@
 import yt_dlp
 from datetime import datetime
-# from app.ingestion
 
 
 # ---------------------------------------------
