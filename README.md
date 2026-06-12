@@ -1,4 +1,4 @@
-YouTube RAG — Retrieval‑Augmented Generation on YouTube Transcripts
+YouTube RAG — Retrieval‑Augmented Generation on YouTube Transcripts.
 This repository contains a complete Retrieval‑Augmented Generation (RAG) pipeline built around YouTube videos.
 The system ingests metadata and transcripts, chunks text, generates embeddings, stores vectors in PostgreSQL + pgvector, retrieves relevant chunks, reranks them, and produces final answers using an LLM.
 
