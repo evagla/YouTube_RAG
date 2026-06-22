@@ -2,7 +2,7 @@
 This backlog outlines the planned improvements for the project.
 The list is intentionally short and focused to keep the repository clear and approachable.
 
--[] 1. **Centralize configuration in settings.yaml**\
+- [ ] 1. **Centralize configuration in settings.yaml**\
 Unify all configuration (LLM, embeddings, reranker, chunking, retrieval, database, cache) into a single file to simplify setup and experimentation.
 
 2. **Improve ingestion pipeline**\
