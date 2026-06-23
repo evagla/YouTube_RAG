@@ -32,3 +32,8 @@ database:
   port: 5432
   name: "youtube_rag"
   user: ""
+  password: ""
+
+  session_memory:
+  max_turns: 5
+  summarization_rules: "Summarize after 3 truns"

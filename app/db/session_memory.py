@@ -1,5 +1,11 @@
 import uuid
 import psycopg2
+from config.config import load_settings
+
+settings = load_settings()
+session_config = settings.get("session_memory", {})
+
+DEFAULT_MAX_TURNS = session_config.get("max_turns", 5)
 
 
 def save_interaction(conn, session_id, user_message, assistant_message):
@@ -14,7 +20,11 @@ def save_interaction(conn, session_id, user_message, assistant_message):
     conn.commit()
 
 
-def load_history(conn, session_id, limit=5):
+def load_history(conn, session_id, limit=None):
+    # Fall back if needed
+    if limit is None:
+        limit = DEFAULT_MAX_TURNS
+
     with conn.cursor() as cur:
         cur.execute(
             """
