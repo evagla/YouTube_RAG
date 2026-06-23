@@ -10,6 +10,7 @@ llm:
 embeddings:
   model: "all-MiniLM-L6-v2"
   dim: 384
+  device: "auto"
 
 reranker:
   model: "BAAI/bge-reranker-base"
