@@ -11,3 +11,4 @@ yt-dlp==2024.04.09
 youtube-transcript-api==0.6.1
 transformers==4.39.3
 torch==2.2.2
+python-dotenv

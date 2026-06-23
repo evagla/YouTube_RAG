@@ -9,7 +9,10 @@ import os
 from pgvector.psycopg2 import register_vector
 import time
 from typing import List, Dict, Any
+from config.config import load_settings
 
+settings = load_settings()
+db_config = settings.get("database", {})
 # ---------------------------------------
 # SQL Search constant
 # ---------------------------------------
@@ -28,12 +31,13 @@ LIMIT %s;
 
 
 def get_connection():
+    # get parameters dynamically with fallbacks
     conn = psycopg2.connect(
-        host="localhost",
-        port=5432,
-        database="youtube_rag",
-        user="raguser",
-        password="ragpass",
+        host=db_config.get("host", "localhost"),
+        port=db_config.get("port", 5432),
+        database=db_config.get("name", "youtube_rag"),
+        user=db_config.get("user", "raguser"),
+        password=db_config.get("password", "ragpass"),  # from .env
     )
     register_vector(conn)
     return conn

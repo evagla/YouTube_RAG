@@ -22,3 +22,7 @@ Thumbs.db
 
 # uv cache
 .uv/
+
+# Local and private configuration files
+.env
+config/settings.yaml
