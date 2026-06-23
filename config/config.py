@@ -24,6 +24,8 @@ def resolve_hardware_device(configured_device: str) -> str:
     else:
         device = configured_device
 
+    return device
+
 
 def load_settings() -> dict:
     """

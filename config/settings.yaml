@@ -14,6 +14,9 @@ embeddings:
 
 reranker:
   model: "BAAI/bge-reranker-base"
+  top_k: 3
+  max_length: 512
+  device: "auto"
 
 chunking:
   max_chars: 500

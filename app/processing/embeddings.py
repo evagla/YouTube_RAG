@@ -7,7 +7,7 @@ emb_config = settings.get("embeddings", {})
 
 # get parpmeters dynamically and define defaults
 model_name = emb_config.get("model", "all-MiniLM-L6-v2")
-device = emb_config.get("device") or "cpu"
+device = emb_config.get("device", "cpu")
 
 
 # init transformer model
