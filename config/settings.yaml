@@ -3,7 +3,9 @@ debug: false
 llm:
   model: "llama3.2:latest"
   provider: "ollama"
-  url: "http://localhost:11434/api/chat"
+  api_url: "http://localhost:11434/api/chat"
+  temperature: 0.2
+  max_tokens: 1024
 
 embeddings:
   model: "all-MiniLM-L6-v2"
@@ -25,3 +27,4 @@ database:
   host: "localhost"
   port: 5432
   name: "youtube_rag"
+  user: ""
