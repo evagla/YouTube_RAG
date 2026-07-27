@@ -89,7 +89,7 @@ llm:
 The recommended way to run the full RAG pipeline is via the included end‑to‑end test:\
 *bash*
 ```
-python tests/full_rag_flow_test.py
+python scripts/full_rag_flow_test.py
 ```
 **This script:**\
 -asks for a YouTube video ID\

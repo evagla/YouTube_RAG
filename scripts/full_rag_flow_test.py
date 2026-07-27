@@ -17,7 +17,7 @@ WHAT THIS SCRIPT DOES
 HOW TO USE
 ----------
 1. Run the script:
-       uv run python -m tests.full_rag_flow_test
+       uv run python -m scripts.full_rag_flow_test
 
 2. Enter a YouTube video ID when prompted.
 
