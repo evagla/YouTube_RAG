@@ -41,7 +41,8 @@ NOTES
 
 from app.rag.rag_pipeline import run_rag
 from app.ingestion.youtube_ingestion import ingest_video
-from app.db.db import get_transcript_id_for_video, video_has_metadata
+
+# from app.db.db import get_transcript_id_for_video, video_has_metadata
 from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 import uuid  # to generate uniqe session id
 
@@ -53,18 +54,9 @@ def test_full_rag_flow():
     print("\n=== FULL RAG PIPELINE TEST ===\n")
     print(f"Session ID: {session_id}")
 
-    # 1. Check if viedo already ingested
-    transcript_id = get_transcript_id_for_video(VIDEO_ID)
-    if transcript_id is None:
-        print("Transcript not found in DB. Running ingest pipeline...\n")
-        ingest_video(VIDEO_ID)
-    if not video_has_metadata(VIDEO_ID):
-        print("Get metadata for video...")
-        ingest_metadata(VIDEO_ID)
-    else:
-        print(
-            f"transcript already exisits in DB (id = {transcript_id}). Skipping ingest.\n"
-        )
+    # 1 Run ingestion pipeline (it will atomatically skipoch fetch pissing parts)
+    print("Running ingestion pipeline..\n")
+    ingest_video(VIDEO_ID)
 
     # 2. Run RAG with intraction loop, stop by writing quit, exit or kill
     print("# Running RAG pipeline...\n")
