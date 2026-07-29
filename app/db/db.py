@@ -54,10 +54,13 @@ def insert_video(
     conn = get_connection()
     cur = conn.cursor()
 
+    # insert if new, return exisiting if already exisits (on conflict)
     cur.execute(
         """
         INSERT INTO videos (youtube_id, title, channel, published_at)
         VALUES (%s, %s, %s, %s)
+        ON CONFLICT (youtube_id)
+        DO UPDATE SET youtube_id = EXCLUDED.youtube_id
         RETURNING id;
         """,
         (youtube_id, title, channel, published_at),
