@@ -49,14 +49,28 @@ import uuid  # to generate uniqe session id
 
 def test_full_rag_flow():
     session_id = str(uuid.uuid4())
-    VIDEO_ID = input("\nYouTube ID:")
 
     print("\n=== FULL RAG PIPELINE TEST ===\n")
     print(f"Session ID: {session_id}")
 
-    # 1 Run ingestion pipeline (it will atomatically skipoch fetch pissing parts)
-    print("Running ingestion pipeline..\n")
-    ingest_video(VIDEO_ID)
+    # 1 . loop handeling video id and igestion
+    while True:
+        VIDEO_ID = input("\nEnter YouTube ID (or type 'quit' to exit):").strip()
+
+        if VIDEO_ID.lower() in ("quit", "exit", "kill"):
+            print("Exiting test.")
+            return
+
+        print("Running ingestion pipelie..\n")
+        transcript_id = ingest_video(VIDEO_ID)
+
+        # in case ingestion is succseeded break the loop and continue to RAG
+        if transcript_id is not None:
+            break
+
+        print(
+            "[ERROR] Ingestion failde (e.g., no transcript aailable). Please try another ID"
+        )
 
     # 2. Run RAG with intraction loop, stop by writing quit, exit or kill
     print("# Running RAG pipeline...\n")

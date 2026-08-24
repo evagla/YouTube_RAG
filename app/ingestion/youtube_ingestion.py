@@ -12,7 +12,7 @@ from app.processing.embeddings import embed_text
 from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 
 
-def ingest_video(video_id: str) -> int:
+def ingest_video(video_id: str) -> int | None:
     """
     Full ingestion pipeline:
     - fetch transcript
@@ -45,28 +45,45 @@ def ingest_video(video_id: str) -> int:
 
     else:
         # B: Download video and metadata
-        print(f"[INFO] Transcript not found. Running transcript pipeline...")
+        print(
+            f"[INFO] Transcript not found  in local database. Fetching from YouTube pipeline..."
+        )
 
-    # Create db record
+    # 2 . Try to fetch transcript BEFORE involving the db
+    try:
+        print(f"[INFO] Fetching transcript for video '{video_id}'")
+        transcript_text = fetch_transcript(video_id)
+
+        if not transcript_text:
+            raise ValueError("Transcript text is empty or None")
+
+    except Exception as e:
+        print(
+            f"[WARNING] Could not fetch transcript for video '{video_id}'. Skipping. Error: {e}"
+        )
+        return None
+
+    # 3. Create db record for video with fully fetched transcript
     vid = insert_video(video_id)
+
     # Fetch metadata for video
-    print(f"[INFO] Fetching metadat for new video...")
+    print(f"[INFO] Fetching metadata for new video...")
     ingest_metadata(video_id)
 
-    # 2. Fetch transcript
-    transcript_text = fetch_transcript(video_id)
+    # 4. Fetch transcript
+    # transcript_text = fetch_transcript(video_id)
 
-    # 3. Insert transcript row
+    # 5. Insert transcript row
     transcript_id = insert_transcript(vid, transcript_text)
 
-    # 4. Chunk transcript
+    # 6. Chunk transcript
     chunks = chunk_text(transcript_text)
 
-    # 5. Insert chunks
+    # 7. Insert chunks
     for idx, chunk in enumerate(chunks):
         insert_chunk(transcript_id, idx, chunk)
 
-    # 6. Embed chunks
+    # 8. Embed chunks
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
