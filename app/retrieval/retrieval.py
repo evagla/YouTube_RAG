@@ -9,6 +9,7 @@ from app.processing.embeddings import embed_text
 from app.db.db import (
     get_transcript_id_for_video,
     search_chunks_for_transcript,
+    search_chunks_for_playlist,
 )
 from app.retrieval.query_expansion import expand_query
 from app.retrieval.reranker import rerank
@@ -94,3 +95,46 @@ def retrieve_texts(query: str, k: int = 5) -> list[str]:
     rows = retrieve_relevant_chunks(query, k)
     return [row["text"] for row in rows]
 '''
+
+
+def retrieve_relevant_chunks_for_playlst(expanded_query: str, playlist_id: str, k=None):
+    print(
+        f"...Retrieving relevant chunks from all videos in playlist '{playlist_id}'..."
+    )
+
+    if k is None:
+        k = DEFAULT_TOP_K
+
+    # 1. Embed query
+    query_embedding = embed_text(expanded_query)
+
+    # 2. Fetch candidates from all videos in the db that belongs to the specific playlist
+    candidates = search_chunks_for_playlist(
+        playlist_id, query_embedding, DEFAULT_CANDIDATES
+    )
+
+    # 3. Truncate long chunk text before reranking
+    for row in candidates:
+        if len(row["text"]) > DEFAULT_TRUNCATE_LENGTH:
+            row["text"] = row["text"][:DEFAULT_TRUNCATE_LENGTH]
+
+    # 4. Rerank the candidates
+    reranked = rerank(expanded_query, candidates, top_k=k)
+
+    return reranked
+
+
+def retrieve_playlist_texts(query: str, playlist_id: str, k=5):
+    # Expanded query
+    expanded_query = expand_query(query)
+
+    # Retrieve chunks inkl. reranker scores for playlist
+    rows = retrieve_relevant_chunks_for_playlst(expanded_query, playlist_id, k)
+
+    # Retrn a sturctured result fo run_rag()
+    return {
+        "original_query": query,
+        "expanded_query": expanded_query,
+        "chunks": rows,
+        "retrieval_confidence": rows[0]["score"] if rows else None,
+    }

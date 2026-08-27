@@ -57,7 +57,7 @@ def build_prompt(query: str, context: str, history: str) -> str:
 # Run RAG and levels for confidence
 # -------------------------------
 from typing import List
-from app.retrieval.retrieval import retrieve_texts
+from app.retrieval.retrieval import retrieve_texts, retrieve_playlist_texts
 from app.rag.llm_client import client
 
 
@@ -83,7 +83,9 @@ def retrieval_confidence_level(score: float) -> str:
         return "High"
 
 
-def run_rag(query: str, youtube_id: str, session_id: str) -> str:
+def run_rag(
+    query: str, youtube_id: str, session_id: str, playlist_id: str = None
+) -> str:
     """
     Run the whole RAG-pipeline:
     -get a db connection
@@ -112,9 +114,11 @@ def run_rag(query: str, youtube_id: str, session_id: str) -> str:
 
     """save_intraction(session_id.query, answer_text)"""
 
-    # 1. Retrieval
-    # old:  chunks: List[str] = retrieve_texts(query, youtube_id)
-    result = retrieve_texts(query, youtube_id)
+    # 1. Retrieval from video or playlist
+    if playlist_id:
+        result = retrieve_playlist_texts(query, playlist_id)
+    else:
+        result = retrieve_texts(query, youtube_id)
 
     original_query = result["original_query"]
     expanded_query = result["expanded_query"]

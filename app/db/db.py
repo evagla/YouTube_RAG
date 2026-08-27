@@ -311,3 +311,57 @@ def video_has_metadata(youtube_id: str) -> bool:
 
     title, channel, published_at = row
     return all([title, channel, published_at])
+
+
+# ----------------------------------
+# insert plalylist and video connection
+# ----------------------------------
+
+
+def insert_playlist_video(playlist_id: str, video_id: int):
+    """
+    Inserts a record linking a playlist_id with a video's interal database ID.
+    Uses ON CONFLICT to avoid duplicate entries
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO playlist_videos (playlist_id, video_id)
+                VALUES (%s, %s)
+                ON CONFLICT (playlist_id, video_id)
+                DO NOTHING;
+                """,
+                (playlist_id, video_id),
+            )
+        conn.commit()
+
+
+# ----------------------------------
+# Search chunks for a specific playlist
+# ----------------------------------
+
+
+def search_chunks_for_playlist(
+    playlist_id: str, query_embedding: list[float], k: int = 5
+):
+    """
+    Searches chunks using cosine distance, but restricts the search to videos
+    that belong to the specified playlist_id via the playlist_videos table.
+    """
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT c.id, c.transcript_id, c.chunk_index, c.text, c.embedding, 
+                       (c.embedding <-> (%s)::vector) AS distance
+                FROM chunks c
+                JOIN transcripts t ON t.id = c.transcript_id
+                JOIN playlist_videos pv ON pv.video_id = t.video_id
+                WHERE pv.playlist_id = %s
+                ORDER BY c.embedding <-> (%s)::vector
+                LIMIT %s;
+                """,
+                (query_embedding, playlist_id, query_embedding, k),
+            )
+            return cur.fetchall()
