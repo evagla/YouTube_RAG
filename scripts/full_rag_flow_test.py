@@ -40,41 +40,80 @@ NOTES
 """
 
 from app.rag.rag_pipeline import run_rag
-from app.ingestion.youtube_ingestion import ingest_video
-from app.db.db import get_transcript_id_for_video, video_has_metadata
+from app.ingestion.youtube_ingestion import ingest_video, ingest_playlist
+
+# from app.db.db import get_transcript_id_for_video, video_has_metadata
 from app.ingestion.youtube_metadata_ingestion import ingest_metadata
 import uuid  # to generate uniqe session id
 
 
 def test_full_rag_flow():
     session_id = str(uuid.uuid4())
-    VIDEO_ID = input("\nYouTube ID:")
 
     print("\n=== FULL RAG PIPELINE TEST ===\n")
     print(f"Session ID: {session_id}")
 
-    # 1. Check if viedo already ingested
-    transcript_id = get_transcript_id_for_video(VIDEO_ID)
-    if transcript_id is None:
-        print("Transcript not found in DB. Running ingest pipeline...\n")
-        ingest_video(VIDEO_ID)
-    if not video_has_metadata(VIDEO_ID):
-        print("Get metadata for video...")
-        ingest_metadata(VIDEO_ID)
-    else:
-        print(
-            f"transcript already exisits in DB (id = {transcript_id}). Skipping ingest.\n"
-        )
+    VIDEO_ID = None
+    PLAYLIST_ID = None
+
+    # 1 . loop handeling video id and igestion
+    while True:
+        user_input = input(
+            "\nEnter YouTube video ID or Playlist URL (or type 'quit' to exit):"
+        ).strip()
+
+        if user_input.lower() in ("quit", "exit", "kill"):
+            print("Exiting test.")
+            return
+
+        # Secenario A: Is it a playlist?
+        if "list=" in user_input:
+            print(
+                "This is not a single video ID. Running playlist ingestion pipeline...\n"
+            )
+            transcript_ids = ingest_playlist(user_input)
+
+            if transcript_ids:
+                print(f"[INFO] Playlist ingestion successfully.")
+
+                if "list=" in user_input:
+                    PLAYLIST_ID = user_input.split("list=")[1].split("&")[0]
+                print(
+                    f"[INFO] Switching to CHAT MODE for the entire playlist: '{PLAYLIST_ID}'"
+                )
+                break  # break the loop and continue to RAG
+
+                # VIDEO_ID = input(
+                #   "\n\nEnter a specific Video ID from the playlist to chat with: "
+                # ).strip()
+                # break  # break the ingesiton loop and go to RAG
+            else:
+                print("[ERROR] Playlist ingestion faild or returned no transcripts")
+                continue  # start the loop over, asking for a new URL or ID
+
+        # Scenario B: Is it a single video ID?
+        else:
+            print("Running single video ingestion pipelie...\n")
+            transcript_id = ingest_video(user_input)
+
+            # in case ingestion is succseeded break the loop and continue to RAG
+            if transcript_id is not None:
+                VIDEO_ID = user_input
+                break  # break the loop and go to RAG
+
+            print(
+                "[ERROR] Ingestion faild (e.g., no transcript aailable). Please try another ID"
+            )
 
     # 2. Run RAG with intraction loop, stop by writing quit, exit or kill
-    print("# Running RAG pipeline...\n")
+    print(f"\n# Running RAG pipeline agains video '{VIDEO_ID}'...\n")
 
     while True:
         query = input("Question: ")
         if query.lower() in ("quit", "exit", "kill"):
             break
 
-        answer = run_rag(query, VIDEO_ID, session_id)
+        answer = run_rag(query, VIDEO_ID, session_id, playlist_id=PLAYLIST_ID)
 
         print(answer)
         print("\n---\n")

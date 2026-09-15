@@ -24,6 +24,8 @@ To run this project locally, you need:
 **System**\
 -Python 3.10+\
 -Git
+-Node.js 22+ (Required by yt-dlp to solve YouTube JavaScript challenges)
+
 
 **Database**\
 PostgreSQL 15+ with pgvector extension installed:\
@@ -153,3 +155,7 @@ flowchart TD
     E1 --> E2
     E2 --> F[Final Answer]
 ```
+
+
+# Future Improvements
+- [ ] **Containerize Application (Docker)**: Move the Python application into a Docker container by creating a `Dockerfile`. Ensure the base image installs both Python and **Node.js** to support `yt-dlp` JavaScript challenges natively within the container.

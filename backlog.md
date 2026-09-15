@@ -5,7 +5,7 @@ The list is intentionally short and focused to keep the repository clear and app
 - [X] [#1](../../issues/1) **Centralize configuration in settings.yaml**\
 Unify all configuration (LLM, embeddings, reranker, chunking, retrieval, database, cache) into a single file to simplify setup and experimentation.
 
-2. **Improve ingestion pipeline**\
+- [X] [#6](../../issues/6) **Improve ingestion pipeline**\
 Enhance ingestion with playlist support, skip‑existing behavior, better error handling, and clearer logging.
 
 3. **Configurable embeddings and reranker**\
